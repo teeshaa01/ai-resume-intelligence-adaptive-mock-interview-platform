@@ -15,8 +15,6 @@ SmartCareer AI is an interactive React application designed to optimize resumes 
 
 ## 🛠️ Quick Start
 
-Ensure you have **Node.js 18+** installed:
-
 ```bash
 # Install dependencies
 npm install
