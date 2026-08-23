@@ -27,20 +27,3 @@ npm run dev
 # Build the production bundle
 npm run build
 ```
-
----
-📤 Push to GitHub
-
-Run these commands inside your project folder:
-
-```bash
-# Initialize and commit code
-git init
-git add .
-git commit -m "feat: initial commit"
-git branch -M main
-
-# Link remote and push (replace URL with your repository link)
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME.git
-git push -u origin main
-```
