@@ -1,0 +1,70 @@
+.db-side-card {
+  padding: 20px;
+  background: #FFFFFF;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+}
+
+.card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.db-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.db-checklist-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: #F8FAFC;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.db-checklist-item:hover {
+  border-color: var(--border-hover);
+  background-color: #FFFFFF;
+  box-shadow: var(--shadow-sm);
+}
+
+.db-checkbox {
+  margin-top: 3px;
+  cursor: pointer;
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+
+.checklist-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.checklist-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: all 0.15s ease;
+}
+
+.checklist-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}

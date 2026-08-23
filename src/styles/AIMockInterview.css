@@ -1,0 +1,102 @@
+.mock-setup-card {
+  padding: 32px 24px;
+  background-color: #FFFFFF;
+  text-align: left;
+}
+
+.setup-form-group {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mock-btn {
+  align-self: flex-start;
+}
+
+.mock-loading-card {
+  padding: 60px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background-color: #FFFFFF;
+}
+
+.mock-loading-card h4 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mock-loading-card p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.mock-session-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: left;
+}
+
+.mock-session-card {
+  padding: 24px;
+  background-color: #FFFFFF;
+}
+
+.session-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+}
+
+.question-prompt-box {
+  background-color: #F8FAFC;
+  border-left: 4px solid var(--primary);
+  padding: 20px;
+  border-radius: var(--radius-md);
+  margin-top: 16px;
+  margin-bottom: 20px;
+}
+
+.question-prompt-box p {
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.session-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.answer-textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+
+.session-submit-btn {
+  align-self: flex-end;
+}
+
+.success-icon {
+  width: 54px;
+  height: 54px;
+  color: var(--primary);
+  margin: 0 auto 16px auto;
+}
+
+.text-center {
+  text-align: center;
+}

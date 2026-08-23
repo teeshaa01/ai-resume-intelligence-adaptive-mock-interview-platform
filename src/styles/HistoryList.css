@@ -1,0 +1,22 @@
+.history-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  text-align: left;
+}
+
+.history-card {
+  padding: 20px;
+  background-color: #FFFFFF;
+}
+
+.history-empty {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 32px 16px;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  margin-top: 16px;
+  background-color: #F8FAFC;
+}

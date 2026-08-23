@@ -1,0 +1,151 @@
+.score-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.score-header-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.total-score-card {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1 1 320px;
+  background-color: #FFFFFF;
+  text-align: left;
+}
+
+.score-ring {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 6px solid var(--primary);
+  background-color: var(--success-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.score-number {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.score-ring .score-label {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.score-verdict h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.score-verdict p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.score-breakdown-card {
+  padding: 24px;
+  flex: 1.4 1 400px;
+  background-color: #FFFFFF;
+}
+
+.breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+  text-align: left;
+}
+
+.breakdown-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.breakdown-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.breakdown-progress-bg {
+  width: 100%;
+  height: 6px;
+  background-color: #F1F5F9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.breakdown-progress-fill {
+  height: 100%;
+  background-color: var(--primary);
+  border-radius: 3px;
+}
+
+.score-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.score-detail-card {
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background-color: #FFFFFF;
+  text-align: left;
+}
+
+.bg-success-light-border {
+  border: 1px solid rgba(16, 185, 129, 0.15);
+  background-color: rgba(16, 185, 129, 0.01);
+}
+
+.bg-danger-light-border {
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  background-color: rgba(239, 68, 68, 0.01);
+}
+
+.score-detail-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.text-success {
+  color: var(--primary);
+}
+
+.text-danger {
+  color: var(--danger);
+}
+
+.score-detail-list {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.score-detail-list li {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
