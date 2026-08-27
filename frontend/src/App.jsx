@@ -5,6 +5,7 @@ import DashboardLayout from "./pages/DashboardLayout";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("landing");
+  const [authMode, setAuthMode] = useState("signup");
 
   const [user, setUser] = useState({
     name: "",
@@ -29,12 +30,20 @@ export default function App() {
     <>
       {currentPage === "landing" && (
         <LandingPage
-          onGetStarted={() => setCurrentPage("auth")}
+          onLogin={() => {
+            setAuthMode("login");
+            setCurrentPage("auth");
+          }}
+          onGetStarted={() => {
+            setAuthMode("signup");
+            setCurrentPage("auth");
+          }}
         />
       )}
 
       {currentPage === "auth" && (
         <Auth
+          initialMode={authMode}
           onAuthSuccess={handleLogin}
           onNavigateHome={() => setCurrentPage("landing")}
         />

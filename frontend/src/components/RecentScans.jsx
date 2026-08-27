@@ -1,7 +1,7 @@
 import React from 'react';
 import '../styles/RecentScans.css';
 
-export default function RecentScans({ recentScans = [] }) {
+export default function RecentScans({ recentScans = [], onDeleteScan }) {
   if (recentScans.length === 0) {
     return (
       <div className="glass-card db-table-card animate-fade-in" style={{ minHeight: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
@@ -29,6 +29,7 @@ export default function RecentScans({ recentScans = [] }) {
               <th>Job Role</th>
               <th>Date Scanned</th>
               <th>ATS Score</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -44,6 +45,21 @@ export default function RecentScans({ recentScans = [] }) {
                   }}>
                     {scan.score}%
                   </span>
+                </td>
+                <td>
+                  <button
+                    type="button"
+                    className="scan-delete-btn"
+                    onClick={() => onDeleteScan(scan.id)}
+                    aria-label={`Delete scan for ${scan.role}`}
+                    title="Delete scan"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}

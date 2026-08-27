@@ -1,10 +1,24 @@
 import React from 'react';
 import '../styles/Metrics.css';
 
-export default function Metrics({ isAnalyzed, interviewsCount = 0 }) {
-  const matchValue = isAnalyzed ? '84.0%' : 'N/A';
-  const gapsValue = isAnalyzed ? '4 Skills' : '0 Skills';
-  const readinessValue = isAnalyzed ? '85%' : '0%';
+export default function Metrics({ scans = [], interviews = [], skillChecklist = [] }) {
+  const averageMatch = scans.length
+    ? scans.reduce((total, scan) => total + Number(scan.score || 0), 0) / scans.length
+    : null;
+  const openSkillGaps = skillChecklist.filter((item) => !item.completed).length;
+  const completedSkillGaps = skillChecklist.length - openSkillGaps;
+  const skillCompletionScore = skillChecklist.length
+    ? Math.round((completedSkillGaps / skillChecklist.length) * 100)
+    : 0;
+  const interviewScore = Math.min(interviews.length * 15, 30);
+  const readinessIndex = averageMatch === null
+    ? 0
+    : Math.round((averageMatch * 0.7) + (skillCompletionScore * 0.2) + interviewScore);
+
+  const matchValue = averageMatch === null ? 'N/A' : `${averageMatch.toFixed(1)}%`;
+  const interviewsCount = interviews.length;
+  const gapsValue = `${openSkillGaps} ${openSkillGaps === 1 ? 'Skill' : 'Skills'}`;
+  const readinessValue = `${Math.min(readinessIndex, 100)}%`;
 
   return (
     <div className="db-metrics-row animate-fade-in">

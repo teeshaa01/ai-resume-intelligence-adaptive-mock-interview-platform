@@ -3,7 +3,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import '../styles/LandingPage.css';
 
-export default function LandingPage({ onGetStarted }) {
+export default function LandingPage({ onGetStarted, onLogin }) {
   const [demoState, setDemoState] = useState('idle'); // idle | scanning | completed
   const [demoScore, setDemoScore] = useState(0);
   const [scanStep, setScanStep] = useState('');
@@ -48,7 +48,7 @@ export default function LandingPage({ onGetStarted }) {
   return (
     <div className="landing-container">
       {/* Navbar component */}
-      <Navbar onLogin={onGetStarted} onSignUp={onGetStarted} />
+      <Navbar onLogin={onLogin} onSignUp={onGetStarted} />
 
       {/* Hero Section */}
       <section className="landing-hero animate-fade-in">
@@ -69,7 +69,7 @@ export default function LandingPage({ onGetStarted }) {
             Optimize your resume for applicant tracking systems, identify critical skill gaps, and practice adaptive mock interviews tailored to your target job descriptions.
           </p>
           <div className="landing-hero-actions">
-            <button className="btn-primary landing-cta-btn" onClick={onGetStarted}>
+            <button className="btn-primary landing-cta-btn" onClick={onLogin}>
               Upload Resume
             </button>
             <button className="btn-secondary landing-secondary-btn" onClick={() => {

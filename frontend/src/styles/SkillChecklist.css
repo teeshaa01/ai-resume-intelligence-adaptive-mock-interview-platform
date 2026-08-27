@@ -55,6 +55,8 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
+  flex: 1;
+  min-width: 0;
 }
 
 .checklist-text {
@@ -67,4 +69,30 @@
 .checklist-sub {
   font-size: 0.75rem;
   color: var(--text-muted);
+}
+
+.checklist-delete-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  transition: all 0.2s ease;
+}
+
+.checklist-delete-btn:hover {
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.22);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.checklist-delete-btn svg {
+  width: 16px;
+  height: 16px;
 }

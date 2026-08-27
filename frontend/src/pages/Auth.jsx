@@ -1,6 +1,21 @@
 import React, { useState } from 'react';
 import '../styles/Auth.css';
 
+const USERS_STORAGE_KEY = 'resuintel_users';
+
+const getStoredUsers = () => {
+  try {
+    const users = JSON.parse(localStorage.getItem(USERS_STORAGE_KEY) || '[]');
+    return Array.isArray(users) ? users : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveStoredUsers = (users) => {
+  localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+};
+
 export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateHome }) {
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
   const [email, setEmail] = useState('');
@@ -8,6 +23,7 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   
   const [showPassword, setShowPassword] = useState(false);
   const [globalError, setGlobalError] = useState('');
@@ -22,6 +38,7 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
 
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
+    setIsResettingPassword(false);
     setGlobalError('');
     setSuccessMsg('');
     setEmail('');
@@ -32,19 +49,6 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
     setPasswordError('');
     setConfirmPasswordError('');
     setNameError('');
-  };
-
-  const handleQuickFill = () => {
-    setEmail('candidate@gmail.com');
-    setPassword('candidate123');
-    setEmailError('');
-    setPasswordError('');
-    if (!isLogin) {
-      setFullName('Alex Candidate');
-      setConfirmPassword('candidate123');
-      setNameError('');
-      setConfirmPasswordError('');
-    }
   };
 
   const validateFields = () => {
@@ -79,6 +83,9 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
         setNameError('Full name is required.');
         isValid = false;
       }
+    }
+
+    if (!isLogin || isResettingPassword) {
       if (password !== confirmPassword) {
         setConfirmPasswordError('Passwords do not match.');
         isValid = false;
@@ -102,17 +109,60 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
     // Simulate Network Request
     setTimeout(() => {
       setIsLoading(false);
+      const users = getStoredUsers();
+      const normalizedEmail = email.trim().toLowerCase();
+      const existingUser = users.find((user) => user.email === normalizedEmail);
+
+      if (isResettingPassword) {
+        if (!existingUser) {
+          setGlobalError('No account found with this email. Please create an account first.');
+          return;
+        }
+
+        saveStoredUsers(users.map((user) => (
+          user.email === normalizedEmail ? { ...user, password } : user
+        )));
+        setSuccessMsg('Password reset successfully. Please sign in with your new password.');
+        setPassword('');
+        setConfirmPassword('');
+        setIsResettingPassword(false);
+        setIsLogin(true);
+        return;
+      }
 
       if (!isLogin) {
+        if (existingUser) {
+          setGlobalError('This email already has an account. Please sign in instead.');
+          return;
+        }
+
+        saveStoredUsers([
+          ...users,
+          {
+            email: normalizedEmail,
+            password,
+            name: fullName.trim()
+          }
+        ]);
         setSuccessMsg('Account created successfully. Logging you in...');
       } else {
+        if (!existingUser) {
+          setGlobalError('No account found with this email. Please create an account first.');
+          return;
+        }
+
+        if (existingUser.password !== password) {
+          setPasswordError('Incorrect password.');
+          return;
+        }
+
         setSuccessMsg('Sign in successful. Redirecting...');
       }
 
       setTimeout(() => {
         onAuthSuccess({
-          email,
-          name: isLogin ? (email === 'candidate@gmail.com' ? 'Alex Candidate' : email.split('@')[0]) : fullName
+          email: normalizedEmail,
+          name: isLogin ? existingUser.name : fullName.trim()
         });
       }, 800);
 
@@ -120,23 +170,35 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
   };
 
   const handleForgotPassword = () => {
+    setGlobalError('');
+    setSuccessMsg('');
+    setEmailError('');
+    setPasswordError('');
+    setConfirmPasswordError('');
+
     if (!email) {
-      setEmailError('Please enter your email address to receive reset instructions.');
+      setEmailError('Please enter your email address to reset your password.');
       return;
     }
-    setEmailError('');
-    alert(`Reset email simulated to ${email}. Check your inbox!`);
-  };
 
-  const handleGoogleLogin = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      onAuthSuccess({
-        email: 'google.candidate@gmail.com',
-        name: 'Google Candidate'
-      });
-    }, 1000);
+    const normalizedEmail = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      setEmailError('Please enter a valid email address.');
+      return;
+    }
+
+    const existingUser = getStoredUsers().find((user) => user.email === normalizedEmail);
+    if (!existingUser) {
+      setGlobalError('No account found with this email. Please create an account first.');
+      return;
+    }
+
+    setEmailError('');
+    setPassword('');
+    setConfirmPassword('');
+    setIsResettingPassword(true);
+    setSuccessMsg('Account verified. Enter a new password below.');
   };
 
   return (
@@ -155,9 +217,13 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
       {/* Main Authentication Card */}
       <div className="glass-card auth-card">
         <div className="auth-card-header">
-          <h2 className="auth-title">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
+          <h2 className="auth-title">
+            {isResettingPassword ? 'Reset Password' : isLogin ? 'Welcome Back' : 'Create Account'}
+          </h2>
           <p className="auth-subtitle">
-            {isLogin ? 'Sign in to access your intelligence dashboard' : 'Join ResuIntel to scan resumes and practice interviews'}
+            {isResettingPassword
+              ? 'Create a new password for your existing account'
+              : isLogin ? 'Sign in to access your intelligence dashboard' : 'Join ResuIntel to scan resumes and practice interviews'}
           </p>
         </div>
 
@@ -165,7 +231,7 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
         {successMsg && <div className="auth-success-banner">{successMsg}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form" noValidate>
-          {!isLogin && (
+          {!isLogin && !isResettingPassword && (
             <div className="form-group">
               <label className="form-label">Full Name</label>
               <input
@@ -232,7 +298,7 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
             {passwordError && <span className="form-error">{passwordError}</span>}
           </div>
 
-          {!isLogin && (
+          {(!isLogin || isResettingPassword) && (
             <div className="form-group">
               <label className="form-label">Confirm Password</label>
               <input
@@ -249,22 +315,24 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
             </div>
           )}
 
-          <div className="auth-options-row">
-            <label className="auth-remember-me">
-              <input 
-                type="checkbox" 
-                className="auth-remember-checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-              />
-              Remember Me
-            </label>
-            {isLogin && (
-              <button type="button" className="auth-forgot-link" onClick={handleForgotPassword}>
-                Forgot Password?
-              </button>
-            )}
-          </div>
+          {!isResettingPassword && (
+            <div className="auth-options-row">
+              <label className="auth-remember-me">
+                <input 
+                  type="checkbox" 
+                  className="auth-remember-checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                Remember Me
+              </label>
+              {isLogin && (
+                <button type="button" className="auth-forgot-link" onClick={handleForgotPassword}>
+                  Forgot Password?
+                </button>
+              )}
+            </div>
+          )}
 
           <button type="submit" className="btn-primary auth-submit-btn" disabled={isLoading}>
             {isLoading ? (
@@ -272,39 +340,30 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
                 <span className="animate-spin-slow auth-spinner" /> Authenticating...
               </span>
             ) : (
-              isLogin ? 'Sign In' : 'Register'
+              isResettingPassword ? 'Reset Password' : isLogin ? 'Sign In' : 'Register'
             )}
           </button>
         </form>
 
-        <div className="auth-divider">
-          <span className="auth-divider-line" />
-          <span className="auth-divider-text">or</span>
-          <span className="auth-divider-line" />
-        </div>
-
-        <button className="auth-google-btn" onClick={handleGoogleLogin} disabled={isLoading}>
-          <svg className="auth-google-icon" viewBox="0 0 488 512" fill="currentColor">
-            <path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/>
-          </svg>
-          Continue with Google
-        </button>
-
-        {/* Quick Fill Testing Assist */}
-        <button className="btn-secondary auth-quickfill-btn" onClick={handleQuickFill}>
-          Auto-Fill Demo Credentials
-        </button>
-
         <div className="auth-toggle-container">
           <span className="auth-toggle-text">
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
+            {isResettingPassword ? 'Remember your password? ' : isLogin ? "Don't have an account? " : "Already have an account? "}
           </span>
-          <button className="auth-toggle-link" onClick={toggleAuthMode}>
-            {isLogin ? 'Register here' : 'Sign in here'}
+          <button
+            className="auth-toggle-link"
+            onClick={isResettingPassword ? () => {
+              setIsResettingPassword(false);
+              setPassword('');
+              setConfirmPassword('');
+              setGlobalError('');
+              setSuccessMsg('');
+            } : toggleAuthMode}
+          >
+            {isResettingPassword ? 'Back to sign in' : isLogin ? 'Register here' : 'Sign in here'}
           </button>
         </div>
 
-        {!isLogin && (
+        {!isLogin && !isResettingPassword && (
           <p className="auth-verif-notice">
             Email verification will be available after backend integration.
           </p>

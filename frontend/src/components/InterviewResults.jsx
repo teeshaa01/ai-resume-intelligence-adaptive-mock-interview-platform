@@ -39,7 +39,7 @@ export default function InterviewResults({ results = [] }) {
           <line x1="12" y1="17" x2="12.01" y2="17" />
         </svg>
         <h3>No Interview Sessions Evaluated Yet</h3>
-        <p>Please complete a mock interview in the AI Mock Interview tab to see detailed technical feedback here.</p>
+        <p>Please generate questions in the Tech Interview or HR Interview panel to see practice sessions here.</p>
       </div>
     );
   }

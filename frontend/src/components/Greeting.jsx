@@ -4,12 +4,12 @@ import '../styles/Greeting.css';
 export default function Greeting({ user, selectedFile, isAnalyzed }) {
   const getSubtitleText = () => {
     if (!selectedFile) {
-      return "Welcome! Upload your resume in the Resume Upload tab to start tracking your ATS fit index, identifying skill gaps, and practicing customized mock interviews.";
+      return "Welcome! Choose ATS Checker, Job Match, Tech Interview, or HR Interview from the sidebar and upload your resume inside that dedicated panel.";
     }
     if (!isAnalyzed) {
-      return `Resume "${selectedFile.name}" is uploaded. Run the analyzer in the Resume Upload panel to evaluate your score.`;
+      return `Resume "${selectedFile.name}" is uploaded. Run the action button in the current panel to continue.`;
     }
-    return "Resume analysis complete. Check the ATS Analysis and Resume Score panels to review optimization tips and key checklist items.";
+    return "Workspace action complete. Review the generated result in the current panel.";
   };
 
   return (
