@@ -8,7 +8,7 @@ services:
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_URL
-         sync: false
+        sync: false
       - key: GROQ_API_KEY
         sync: false          # Paste from your backend/.env → GROQ_API_KEY
       - key: CORS_ORIGINS
@@ -19,10 +19,10 @@ services:
   # ─── Frontend (React + Vite) ────────────────────────────────────────────────
   - type: web
     name: ai-resume-frontend
-    runtime: static
+    runtime: node
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: dist
+    startCommand: npm run preview -- --host 0.0.0.0 --port $PORT
     envVars:
       - key: VITE_API_URL
         sync: false          # Paste backend URL after backend deploys
