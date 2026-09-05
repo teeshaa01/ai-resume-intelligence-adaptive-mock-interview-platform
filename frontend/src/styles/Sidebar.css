@@ -1,5 +1,5 @@
 .db-sidebar {
-  background-color: var(--bg-sidebar);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -42,6 +42,11 @@
   background: none;
   cursor: pointer;
   padding: 0;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-logo:hover {
+  transform: translateX(2px);
 }
 
 .logo-icon {
@@ -80,6 +85,61 @@
 
 .nav-item:hover {
   background-color: #F8FAFC;
+}
+
+.feature-modes-nav-item {
+  position: relative;
+}
+
+.feature-modes-chevron {
+  margin-left: auto;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.feature-modes-subnav {
+  display: grid;
+  gap: 3px;
+  margin: -2px 0 6px 30px;
+  padding-left: 12px;
+  border-left: 1px solid #DDD6FE;
+}
+
+.feature-mode-subnav-item {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  text-align: left;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.feature-mode-subnav-item:hover,
+.feature-mode-subnav-item.active {
+  background: #F1EEFF;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.feature-mode-subnav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.feature-mode-subnav-item:hover {
+  transform: translateX(3px);
+}
+
+.feature-mode-subnav-item small {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 400;
 }
 
 .nav-icon {

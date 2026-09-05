@@ -13,7 +13,7 @@
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  background-color: var(--primary);
+  background-color: #2563EB;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,21 +49,21 @@
 }
 
 .logout-btn {
-  background: none;
+  background: var(--danger-light);
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 6px;
-  color: var(--text-secondary);
-  opacity: 0.8;
+  color: var(--danger);
+  opacity: 1;
   transition: opacity 0.2s ease, color 0.2s ease;
   border-radius: 4px;
 }
 
 .logout-btn:hover {
   opacity: 1;
-  color: var(--danger);
-  background-color: var(--danger-light);
+  color: #B91C1C;
+  background-color: #FECACA;
 }

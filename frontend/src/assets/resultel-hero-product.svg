@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 620" role="img" aria-labelledby="title desc">
+  <title id="title">Resultel career preparation dashboard</title>
+  <desc id="desc">A purple Resultel dashboard on a laptop beside a notebook and plant.</desc>
+  <circle cx="103" cy="92" r="42" fill="#e9e1ff"/>
+  <path d="M103 67v50M78 92h50" stroke="#7658e8" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="660" cy="106" r="47" fill="#ebe5ff"/>
+  <path d="M660 77c12 0 22 10 22 22 0 20-22 33-22 33s-22-13-22-33c0-12 10-22 22-22Z" fill="#7658e8" opacity=".8"/>
+  <g transform="translate(570 44) rotate(8)">
+    <rect width="55" height="70" rx="7" fill="#fff" stroke="#d9d0f5" stroke-width="2"/>
+    <path d="M13 20h28M13 30h28M13 40h19" stroke="#b4a8e8" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="42" cy="52" r="6" fill="#7658e8" opacity=".75"/>
+  </g>
+  <g transform="translate(92 278) rotate(-12)">
+    <rect width="64" height="46" rx="6" fill="#fff" stroke="#ddd5f5" stroke-width="2"/>
+    <path d="M12 14h39M12 23h31M12 32h22" stroke="#c4b9ed" stroke-width="3" stroke-linecap="round"/>
+    <path d="M48 35l8 5-8 4Z" fill="#7658e8"/>
+  </g>
+  <ellipse cx="389" cy="491" rx="294" ry="31" fill="#d7cdf8" opacity=".7"/>
+  <g transform="translate(138 70) rotate(5 246 184)">
+    <rect x="29" y="22" width="500" height="338" rx="18" fill="#312b55"/>
+    <rect x="43" y="36" width="472" height="310" rx="10" fill="#fff"/>
+    <rect x="43" y="36" width="472" height="38" rx="10" fill="#fbfaff"/>
+    <circle cx="65" cy="55" r="5" fill="#7658e8"/>
+    <text x="82" y="60" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#25233d">Resultel Dashboard</text>
+    <rect x="60" y="91" width="105" height="235" rx="8" fill="#f8f6ff"/>
+    <text x="76" y="122" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#7658e8">Overview</text>
+    <text x="76" y="153" font-family="Arial,sans-serif" font-size="11" fill="#7d7890">ATS Checker</text>
+    <text x="76" y="181" font-family="Arial,sans-serif" font-size="11" fill="#7d7890">Job Match</text>
+    <text x="76" y="209" font-family="Arial,sans-serif" font-size="11" fill="#7d7890">Interviews</text>
+    <text x="76" y="237" font-family="Arial,sans-serif" font-size="11" fill="#7d7890">Skill Gaps</text>
+    <rect x="183" y="91" width="148" height="83" rx="10" fill="#f1edff"/>
+    <text x="198" y="118" font-family="Arial,sans-serif" font-size="11" fill="#716b83">Resume quality</text>
+    <text x="198" y="151" font-family="Arial,sans-serif" font-size="29" font-weight="800" fill="#7658e8">82%</text>
+    <rect x="342" y="91" width="148" height="83" rx="10" fill="#fff" stroke="#e8e2f7"/>
+    <text x="357" y="118" font-family="Arial,sans-serif" font-size="11" fill="#716b83">Job match</text>
+    <text x="357" y="151" font-family="Arial,sans-serif" font-size="29" font-weight="800" fill="#7658e8">76%</text>
+    <rect x="183" y="190" width="307" height="136" rx="10" fill="#fff" stroke="#e8e2f7"/>
+    <text x="198" y="215" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#25233d">Preparation progress</text>
+    <path d="M201 294h270M201 272h270M201 250h270" stroke="#eeeafa" stroke-width="1"/>
+    <path d="M214 283v-19M248 283v-43M282 283v-29M316 283v-63M350 283v-79M384 283v-58M418 283v-94M452 283v-108" stroke="#7658e8" stroke-width="17" stroke-linecap="round"/>
+    <path d="M201 294h270" stroke="#a999ed" stroke-width="2"/>
+    <path d="M105 367h347l62 35H48l57-35Z" fill="#8c7be1"/>
+    <path d="M105 367h347l35 20H70l35-20Z" fill="#b5a8ee"/>
+    <rect x="260" y="376" width="112" height="8" rx="4" fill="#6753c8"/>
+  </g>
+  <g transform="translate(112 488) rotate(-8)">
+    <rect width="254" height="93" rx="7" fill="#fff" stroke="#d6ccf2" stroke-width="3"/>
+    <path d="M0 20h254M0 40h254M0 60h254M0 80h254" stroke="#eee9fb"/>
+    <text x="26" y="31" font-family="cursive" font-size="17" fill="#55498c">Plan your</text>
+    <text x="26" y="54" font-family="cursive" font-size="17" fill="#55498c">next career move</text>
+    <path d="M188 28l19 9-19 9" fill="none" stroke="#7658e8" stroke-width="3"/>
+  </g>
+  <g transform="translate(586 406)">
+    <path d="M43 0c-5 34-4 64 0 95" stroke="#5e9b70" stroke-width="5"/>
+    <path d="M43 36C14 18 0 29 3 52c20 8 32 4 40-16ZM43 62c31-21 48-10 45 13-21 9-35 4-45-13ZM43 22c-2-25 13-35 29-27 1 17-9 27-29 27Z" fill="#73af7d"/>
+    <path d="M4 88h81l-10 91H16L4 88Z" fill="#7658e8"/>
+    <path d="M13 95h63" stroke="#a696ee" stroke-width="5"/>
+  </g>
+  <g transform="translate(476 526) rotate(-25)">
+    <rect width="128" height="9" rx="4" fill="#352b5d"/>
+    <path d="M128 0l19 4.5-19 4.5Z" fill="#7658e8"/>
+  </g>
+  <rect x="668" y="522" width="56" height="56" rx="18" fill="#7658e8"/>
+  <path d="M696 535v23M687 549l9 9 9-9" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

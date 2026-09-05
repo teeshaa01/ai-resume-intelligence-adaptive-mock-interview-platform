@@ -1,20 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/Auth.css';
 
-const USERS_STORAGE_KEY = 'resuintel_users';
-
-const getStoredUsers = () => {
-  try {
-    const users = JSON.parse(localStorage.getItem(USERS_STORAGE_KEY) || '[]');
-    return Array.isArray(users) ? users : [];
-  } catch {
-    return [];
-  }
-};
-
-const saveStoredUsers = (users) => {
-  localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-};
+const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateHome }) {
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
@@ -95,7 +82,7 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
     return isValid;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateFields()) {
@@ -106,67 +93,22 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
     setGlobalError('');
     setSuccessMsg('');
 
-    // Simulate Network Request
-    setTimeout(() => {
+    try {
+      const formData = new FormData();
+      formData.append('email', email.trim().toLowerCase());
+      formData.append('password', password);
+      if (!isLogin) formData.append('full_name', fullName.trim());
+      const response = await fetch(`${API_URL}/auth/${isLogin ? 'login' : 'signup'}`, { method: 'POST', body: formData });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Authentication failed.');
+      localStorage.setItem('resuintel_auth_token', data.token);
+      setSuccessMsg(isLogin ? 'Sign in successful.' : 'Account created successfully.');
+      onAuthSuccess(data.user);
+    } catch (error) {
+      setGlobalError(error.message || 'Unable to connect to the authentication service.');
+    } finally {
       setIsLoading(false);
-      const users = getStoredUsers();
-      const normalizedEmail = email.trim().toLowerCase();
-      const existingUser = users.find((user) => user.email === normalizedEmail);
-
-      if (isResettingPassword) {
-        if (!existingUser) {
-          setGlobalError('No account found with this email. Please create an account first.');
-          return;
-        }
-
-        saveStoredUsers(users.map((user) => (
-          user.email === normalizedEmail ? { ...user, password } : user
-        )));
-        setSuccessMsg('Password reset successfully. Please sign in with your new password.');
-        setPassword('');
-        setConfirmPassword('');
-        setIsResettingPassword(false);
-        setIsLogin(true);
-        return;
-      }
-
-      if (!isLogin) {
-        if (existingUser) {
-          setGlobalError('This email already has an account. Please sign in instead.');
-          return;
-        }
-
-        saveStoredUsers([
-          ...users,
-          {
-            email: normalizedEmail,
-            password,
-            name: fullName.trim()
-          }
-        ]);
-        setSuccessMsg('Account created successfully. Logging you in...');
-      } else {
-        if (!existingUser) {
-          setGlobalError('No account found with this email. Please create an account first.');
-          return;
-        }
-
-        if (existingUser.password !== password) {
-          setPasswordError('Incorrect password.');
-          return;
-        }
-
-        setSuccessMsg('Sign in successful. Redirecting...');
-      }
-
-      setTimeout(() => {
-        onAuthSuccess({
-          email: normalizedEmail,
-          name: isLogin ? existingUser.name : fullName.trim()
-        });
-      }, 800);
-
-    }, 1200);
+    }
   };
 
   const handleForgotPassword = () => {
@@ -188,17 +130,7 @@ export default function Auth({ initialMode = 'login', onAuthSuccess, onNavigateH
       return;
     }
 
-    const existingUser = getStoredUsers().find((user) => user.email === normalizedEmail);
-    if (!existingUser) {
-      setGlobalError('No account found with this email. Please create an account first.');
-      return;
-    }
-
-    setEmailError('');
-    setPassword('');
-    setConfirmPassword('');
-    setIsResettingPassword(true);
-    setSuccessMsg('Account verified. Enter a new password below.');
+    setGlobalError('Password reset must be handled by an administrator.');
   };
 
   return (

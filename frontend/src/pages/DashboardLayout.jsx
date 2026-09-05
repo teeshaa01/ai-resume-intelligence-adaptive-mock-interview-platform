@@ -6,25 +6,34 @@ import Metrics from '../components/Metrics';
 import RecentScans from '../components/RecentScans';
 import SkillChecklist from '../components/SkillChecklist';
 import ProfileSettings from '../components/ProfileSettings';
+import AdminUsers from '../components/AdminUsers';
 import '../styles/DashboardLayout.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
+const getApiErrorMessage = (payload, fallback) => {
+  if (typeof payload?.detail === 'string') return payload.detail;
+  if (typeof payload?.message === 'string') return payload.message;
+  if (payload?.detail) return JSON.stringify(payload.detail);
+  return fallback;
+};
+
 const WORKSPACE_CONFIG = {
   ats_checker: {
-    eyebrow: '01 ATS Checker',
+    eyebrow: 'ATS Checker',
     title: 'ATS Resume Checker',
     uploadLabel: 'Dedicated PDF Upload',
-    uploadHelp: 'Upload the resume PDF you want to check against ATS formatting and keyword rules.',
+    uploadHelp: 'Upload the resume PDF or DOCX you want to check against ATS formatting and keyword rules.',
     actionLabel: 'Run ATS Checker',
     resultTitle: 'ATS Checker Complete',
-    scoreLabel: 'ATS Compatibility Score'
+    scoreLabel: 'Resume Quality Score',
+    isAts: true
   },
   job_match: {
-    eyebrow: '02 Job Match',
+    eyebrow: 'Job Match',
     title: 'Job Match Analysis',
     uploadLabel: 'Dedicated PDF Upload',
-    uploadHelp: 'Upload the resume PDF for this job match analysis.',
+    uploadHelp: 'Upload the resume PDF or DOCX for this job match analysis.',
     jobDescriptionLabel: 'Required Job Description',
     jobDescriptionPlaceholder: 'Paste the target job description here...',
     requiresJobDescription: true,
@@ -33,10 +42,10 @@ const WORKSPACE_CONFIG = {
     scoreLabel: 'Job Match Score'
   },
   tech_interview: {
-    eyebrow: '03 Tech Interview',
+    eyebrow: 'Tech Interview',
     title: 'Tech Interview Practice',
     uploadLabel: 'Dedicated PDF Upload for Technical Interview',
-    uploadHelp: 'Upload the resume PDF you want to use for technical interview preparation.',
+    uploadHelp: 'Upload the resume PDF or DOCX you want to use for technical interview preparation.',
     jobDescriptionLabel: 'Optional Target Job Description',
     jobDescriptionPlaceholder: 'Paste a target tech job description for more focused questions...',
     actionLabel: 'Start Interactive Tech Interview',
@@ -44,10 +53,10 @@ const WORKSPACE_CONFIG = {
     interviewType: 'tech'
   },
   hr_interview: {
-    eyebrow: '04 HR Interview',
+    eyebrow: 'HR Interview',
     title: 'HR & Behavioral Interview Practice',
     uploadLabel: 'Dedicated PDF Upload for HR Interview',
-    uploadHelp: 'Upload the resume PDF you want to use for HR and behavioral interview preparation.',
+    uploadHelp: 'Upload the resume PDF or DOCX you want to use for HR and behavioral interview preparation.',
     jobDescriptionLabel: 'Optional Target Job Description',
     jobDescriptionPlaceholder: 'Paste a target job description for more role-aware HR questions...',
     actionLabel: 'Start Interactive HR Interview',
@@ -56,20 +65,57 @@ const WORKSPACE_CONFIG = {
   }
 };
 
+const DASHBOARD_FEATURE_TABS = [
+  {
+    id: 'role',
+    label: 'Role Based',
+    title: 'Role-Based Prep',
+    description: 'Tailor mock interviews, skill checks, and resume guidance to the exact role you are targeting.',
+    pills: ['Targeted prompts', 'Skill mapping', 'Interview flow'],
+    actionLabel: 'Open Job Match',
+    actionTab: 'job_match',
+    analysisMode: 'role'
+  },
+  {
+    id: 'company',
+    label: 'Company Based',
+    title: 'Company-Focused Strategy',
+    description: 'Align your resume and interview practice with a company’s culture, priorities, and hiring expectations.',
+    pills: ['Culture fit', 'Hiring signals', 'Priority skills'],
+    actionLabel: 'Open Job Match',
+    actionTab: 'job_match',
+    analysisMode: 'company'
+  },
+  {
+    id: 'ats',
+    label: 'ATS Checker',
+    title: 'ATS Resume Checker',
+    description: 'Run a standard ATS scan to check resume structure, keywords, readability, and contact details.',
+    pills: ['ATS score', 'Resume structure', 'Keyword check'],
+    actionLabel: 'Open ATS Checker',
+    actionTab: 'ats_checker',
+    analysisMode: 'ats'
+  },
+];
+
 const INITIAL_WORKSPACE_STATE = {
   file: null,
   error: '',
   jobDescription: '',
+  targetRole: '',
+  companyName: '',
   result: '',
   score: null,
   details: [],
   questions: [],
+  resumeContext: '',
   interviewMode: 'written',
   currentQuestionIndex: 0,
   currentAnswer: '',
   answers: [],
   lastFeedback: null,
   finalReport: null,
+  atsReport: null,
   showSampleAnswer: false,
   isListening: false,
   isRunning: false
@@ -557,7 +603,11 @@ const saveDashboardData = (email, data) => {
 
 function DedicatedWorkspacePanel({ config, state, onStateChange, onRun, onCompleteInterview }) {
   const inputId = `${config.eyebrow.toLowerCase().replace(/\W+/g, '-')}-resume`;
-  const canRun = state.file && (!config.requiresJobDescription || state.jobDescription.trim());
+  const canRun = state.file && (config.analysisMode === 'role'
+    ? state.targetRole.trim()
+    : config.analysisMode === 'company'
+      ? state.companyName.trim() && state.jobDescription.trim()
+      : (!config.requiresJobDescription || state.jobDescription.trim()));
   const isInterviewPanel = config.interviewType;
   const currentQuestion = state.questions[state.currentQuestionIndex];
   const SpeechRecognition = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : null;
@@ -585,9 +635,9 @@ function DedicatedWorkspacePanel({ config, state, onStateChange, onRun, onComple
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-    if (!isPdf) {
-      updateState({ file: null, error: 'Please upload a PDF resume for this section.', ...clearSessionState });
+    const isResumeFile = file.type === 'application/pdf' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.name.toLowerCase().endsWith('.pdf') || file.name.toLowerCase().endsWith('.docx');
+    if (!isResumeFile) {
+      updateState({ file: null, error: 'Please upload a PDF or DOCX resume for this section.', ...clearSessionState });
       return;
     }
 
@@ -632,96 +682,220 @@ function DedicatedWorkspacePanel({ config, state, onStateChange, onRun, onComple
         isListening: true
       });
     };
-    recognition.onerror = () => updateState({
+    recognition.onerror = (event) => updateState({
       currentAnswer: latestAnswer,
       isListening: false,
-      error: 'Microphone transcription failed. You can continue in written mode.'
+      error: event.error === 'not-allowed'
+        ? 'Microphone permission was blocked. Allow microphone access and try again.'
+        : event.error === 'no-speech'
+          ? 'No speech was detected. Speak clearly and try again.'
+          : 'Microphone transcription failed. You can continue in written mode.'
     });
     recognition.onend = () => updateState({
       currentAnswer: latestAnswer,
       isListening: false
     });
-    recognition.start();
+    try {
+      recognition.start();
+    } catch {
+      updateState({
+        isListening: false,
+        error: 'Microphone could not start. Allow microphone access and try again.'
+      });
+    }
   };
 
-  const handleSubmitInterviewAnswer = () => {
-    if (!currentQuestion || !state.currentAnswer.trim()) return;
+  const handleSubmitInterviewAnswer = async () => {
+    if (!currentQuestion || !state.currentAnswer.trim() || state.isRunning) return;
 
-    const questionText = typeof currentQuestion === 'string' ? currentQuestion : currentQuestion.question;
-    const currentTopic = typeof currentQuestion === 'string' ? 'Interview' : currentQuestion.topic;
+    const questionText = typeof currentQuestion === 'string'
+      ? currentQuestion
+      : currentQuestion.question;
+    const currentTopic = typeof currentQuestion === 'string'
+      ? 'Interview'
+      : (currentQuestion.topic || 'Interview');
     const isHrInterview = config.interviewType === 'hr';
-    const scores = scoreInterviewAnswer(state.currentAnswer, state.interviewMode, config.interviewType);
-    const feedback = isHrInterview
-      ? buildHrFeedback(questionText, state.currentAnswer, state.interviewMode)
-      : buildInterviewerFeedback(questionText, state.currentAnswer, state.interviewMode, scores);
-    const nextAnswers = [
-      ...state.answers,
-      {
-        question: questionText,
-        answerText: state.currentAnswer.trim(),
-        topic: currentTopic,
-        mode: state.interviewMode,
-        scores,
-        feedback
-      }
-    ];
-    const nextPlanned = state.questions[state.currentQuestionIndex + 1];
-    const adaptiveNextQuestion = isHrInterview
-      ? buildHrAdaptiveNextQuestion({
-          answer: state.currentAnswer,
-          currentTopic,
-          nextPlanned,
-          answeredTopics: nextAnswers.map(item => item.topic).filter(Boolean),
-          answerCount: nextAnswers.length
-        })
-      : buildAdaptiveNextQuestion({
-          question: questionText,
-          answer: state.currentAnswer,
-          scores,
-          currentTopic,
-          nextPlanned
-        });
-    const nextQuestions = state.currentQuestionIndex >= state.questions.length - 1
-      ? [...state.questions, adaptiveNextQuestion]
-      : [
-          ...state.questions.slice(0, state.currentQuestionIndex + 1),
-          adaptiveNextQuestion,
-          ...state.questions.slice(state.currentQuestionIndex + 2)
-        ];
+    const answerText = state.currentAnswer.trim();
+    const questionNumber = state.answers.length + 1;
 
-    if (nextAnswers.length >= 8) {
-      const finalReport = buildFinalInterviewReport(nextAnswers, state.interviewMode, config.interviewType);
+    updateState({ isRunning: true, error: '' });
+
+    // IMPORTANT:
+    // The backend /interview/evaluate endpoint expects JSON, not FormData.
+    // Do not send the resume file again here. The resume context comes from
+    // the /interview/tech/start or /interview/hr/start response.
+    const payload = {
+      interview_type: isHrInterview ? 'hr' : 'technical',
+      resume_context: state.resumeContext || '',
+      job_description: state.jobDescription || '',
+      current_question: questionText,
+      current_topic: currentTopic,
+      answer: answerText,
+      previous_qa: state.answers.slice(-6).map(item => ({
+        question: item.question,
+        answer: item.answerText
+      })),
+      question_number: questionNumber
+    };
+
+    try {
+      const response = await fetch(`${API_URL}/interview/evaluate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      let data = {};
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error('The backend returned an invalid response.');
+      }
+
+      if (!response.ok) {
+        throw new Error(getApiErrorMessage(data, 'AI interview evaluation failed.'));
+      }
+
+      // Backend returns one overall score from 0-10.
+      // Keep the existing frontend report structure by using that score
+      // consistently for the per-answer categories.
+      const backendScore = Number(data.score);
+      const safeScore = Number.isFinite(backendScore)
+        ? Math.max(0, Math.min(10, backendScore))
+        : 0;
+
+      const scores = {
+        technicalScore: safeScore,
+        depthScore: safeScore,
+        relevanceScore: safeScore,
+        problemSolvingScore: safeScore,
+        communicationScore: state.interviewMode === 'speaking' ? safeScore : null
+      };
+
+      const feedbackText = typeof data.feedback === 'string'
+        ? data.feedback
+        : 'The AI evaluated your answer successfully.';
+
+      const goodPoints = Array.isArray(data.good_points)
+        ? data.good_points
+        : [];
+
+      const improvements = Array.isArray(data.improvements)
+        ? data.improvements
+        : [];
+
+      const feedback = {
+        question: questionText,
+        answer: answerText,
+        good: goodPoints.length
+          ? goodPoints.slice(0, 2).join(' ')
+          : 'You attempted the question and gave the interviewer a useful starting point.',
+        needsImprovement: feedbackText,
+        incorrect: [],
+        improvements: improvements.length
+          ? improvements.slice(0, 4)
+          : ['Continue giving specific, structured answers with examples.'],
+        sampleAnswer: '',
+        communication: state.interviewMode === 'speaking'
+          ? feedbackText
+          : null,
+        verdict: data.verdict || '',
+        scores
+      };
+
+      const nextAnswers = [
+        ...state.answers,
+        {
+          question: questionText,
+          answerText,
+          topic: currentTopic,
+          mode: state.interviewMode,
+          scores,
+          backendScore: safeScore,
+          feedback
+        }
+      ];
+
+      // The backend's adaptive question is the source of truth.
+      const nextQuestionFromAI = data.next_question?.question
+        ? {
+            topic: data.next_question.topic || 'Follow-up',
+            difficulty: data.next_question.difficulty || 'Adaptive',
+            question: data.next_question.question
+          }
+        : null;
+
+      if (!nextQuestionFromAI && nextAnswers.length < 8) {
+        throw new Error('AI did not return the next interview question. Please try again.');
+      }
+
+      // Keep the existing question list, but insert the AI-generated question
+      // immediately after the question that was just answered.
+      const nextQuestions = nextQuestionFromAI
+        ? (state.currentQuestionIndex >= state.questions.length - 1
+            ? [...state.questions, nextQuestionFromAI]
+            : [
+                ...state.questions.slice(0, state.currentQuestionIndex + 1),
+                nextQuestionFromAI,
+                ...state.questions.slice(state.currentQuestionIndex + 2)
+              ])
+        : state.questions;
+
+      // Complete after 8 evaluated answers.
+      if (nextAnswers.length >= 8) {
+        const finalReport = buildFinalInterviewReport(
+          nextAnswers,
+          state.interviewMode,
+          config.interviewType
+        );
+
+        updateState({
+          answers: nextAnswers,
+          questions: nextQuestions,
+          currentAnswer: '',
+          finalReport,
+          lastFeedback: feedback,
+          score: Math.round(safeScore * 10),
+          result: `Interview complete. Final level: ${finalReport.level}.`,
+          isRunning: false,
+          showSampleAnswer: false
+        });
+
+        if (onCompleteInterview) {
+          onCompleteInterview({
+            id: Date.now(),
+            role: config.title,
+            date: new Date().toISOString().split('T')[0],
+            score: finalReport.overallScore,
+            mode: state.interviewMode,
+            finalReport,
+            answersList: nextAnswers
+          });
+        }
+        return;
+      }
+
+      // Move to the AI-generated question. This is the part that makes
+      // Evaluate & Next actually advance the interview.
       updateState({
         answers: nextAnswers,
         questions: nextQuestions,
+        currentQuestionIndex: state.currentQuestionIndex + 1,
         currentAnswer: '',
-        finalReport,
         lastFeedback: feedback,
-        score: finalReport.overallScore,
-        result: `Interview complete. Final level: ${finalReport.level}.`
+        finalReport: null,
+        score: Math.round(safeScore * 10),
+        isRunning: false,
+        showSampleAnswer: false
       });
-      if (onCompleteInterview) {
-        onCompleteInterview({
-          id: Date.now(),
-          role: config.title,
-          date: new Date().toISOString().split('T')[0],
-          score: finalReport.overallScore,
-          mode: state.interviewMode,
-          finalReport,
-          answersList: nextAnswers
-        });
-      }
-      return;
+    } catch (error) {
+      updateState({
+        isRunning: false,
+        error: error?.message || 'AI could not evaluate this answer. Please try again.'
+      });
     }
-
-    updateState({
-      answers: nextAnswers,
-      questions: nextQuestions,
-      currentQuestionIndex: state.currentQuestionIndex + 1,
-      currentAnswer: '',
-      lastFeedback: feedback,
-      finalReport: null
-    });
   };
 
   return (
@@ -741,7 +915,7 @@ function DedicatedWorkspacePanel({ config, state, onStateChange, onRun, onComple
           <input
             id={inputId}
             type="file"
-            accept=".pdf,application/pdf"
+            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             onChange={handleFileChange}
             hidden
           />
@@ -771,6 +945,28 @@ function DedicatedWorkspacePanel({ config, state, onStateChange, onRun, onComple
 
       {config.jobDescriptionLabel && (
         <div className="workspace-field-block">
+          {config.analysisMode === 'role' && (
+            <>
+              <label className="form-label">Target Role</label>
+              <input
+                className="form-input"
+                value={state.targetRole}
+                onChange={(event) => updateState({ targetRole: event.target.value, ...clearSessionState })}
+                placeholder="e.g. AI/ML Engineer"
+              />
+            </>
+          )}
+          {config.analysisMode === 'company' && (
+            <>
+              <label className="form-label">Company</label>
+              <input
+                className="form-input"
+                value={state.companyName}
+                onChange={(event) => updateState({ companyName: event.target.value, ...clearSessionState })}
+                placeholder="e.g. Microsoft"
+              />
+            </>
+          )}
           <label className="form-label">{config.jobDescriptionLabel}</label>
           <textarea
             className="form-input workspace-textarea"
@@ -812,6 +1008,31 @@ function DedicatedWorkspacePanel({ config, state, onStateChange, onRun, onComple
         <div className="workspace-result-card">
           <h4>{config.resultTitle}</h4>
           <p>{state.result}</p>
+          {config.isAts && state.atsReport && (
+            <div className="ats-report-content">
+              <div className="ats-report-heading">
+                <div>
+                  <span className="ats-report-label">Resume Quality</span>
+                  <strong>{state.atsReport.resume_quality_score}/100</strong>
+                </div>
+                <span className="ats-score-label">{state.atsReport.score_label}</span>
+              </div>
+              <div className="ats-section-score-grid">
+                {Object.entries(state.atsReport.section_scores || {}).map(([title, value]) => (
+                  <div className="ats-section-score" key={title}><span>{title}</span><strong>{value}</strong></div>
+                ))}
+              </div>
+              <div className="ats-feedback-grid">
+                <div><h5>Strengths</h5><ul>{(state.atsReport.strengths || []).map(item => <li key={item}>{item}</li>)}</ul></div>
+                <div><h5>Improvements</h5><ul>{(state.atsReport.improvements || []).map(item => <li key={item}>{item}</li>)}</ul></div>
+              </div>
+              <div className="ats-job-match-empty">
+                <strong>Job Match</strong>
+                <span>Job Description not provided</span>
+                <small>Upload or paste a Job Description to see how well your resume matches a specific role.</small>
+              </div>
+            </div>
+          )}
           {state.score !== null && (
             <div className="workspace-score-row">
               <span className="workspace-score-value">{state.score}%</span>
@@ -853,6 +1074,22 @@ function DedicatedWorkspacePanel({ config, state, onStateChange, onRun, onComple
                       <p>{state.lastFeedback.needsImprovement}</p>
                     </div>
                   </div>
+                  {state.lastFeedback.verdict && (
+                    <div className="feedback-block">
+                      <span className="feedback-label">AI Verdict</span>
+                      <p>{state.lastFeedback.verdict}</p>
+                    </div>
+                  )}
+                  {state.lastFeedback.scores && (
+                    <div className="feedback-grid">
+                      {Object.entries(state.lastFeedback.scores).filter(([, value]) => value !== null).map(([key, value]) => (
+                        <div className="feedback-block" key={key}>
+                          <span className="feedback-label">{key.replace('Score', '')}</span>
+                          <p>{value}/10</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="feedback-block">
                     <span className="feedback-label">What You Should Improve</span>
                     <ul className="feedback-list">
@@ -911,8 +1148,8 @@ function DedicatedWorkspacePanel({ config, state, onStateChange, onRun, onComple
                     {state.isListening ? 'Listening...' : 'Speak Answer'}
                   </button>
                 )}
-                <button type="button" className="btn-primary" onClick={handleSubmitInterviewAnswer} disabled={!state.currentAnswer.trim()}>
-                  {state.currentQuestionIndex >= state.questions.length - 1 ? 'Finish Interview' : 'Save & Next'}
+                <button type="button" className="btn-primary" onClick={handleSubmitInterviewAnswer} disabled={!state.currentAnswer.trim() || state.isRunning}>
+                  {state.isRunning ? 'AI Evaluating...' : (state.answers.length >= 7 ? 'Finish Interview' : 'Evaluate & Next')}
                 </button>
               </div>
               {state.interviewMode === 'speaking' && !canUseSpeech && (
@@ -957,6 +1194,8 @@ export default function DashboardLayout({ user, onLogout }) {
   const savedDashboardData = loadDashboardData(user.email);
   const [activeTab, setActiveTab] = useState('overview'); // 11 tabs possible
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [selectedFeature, setSelectedFeature] = useState('role');
+  const [selectedAnalysisMode, setSelectedAnalysisMode] = useState('role');
 
   const [isAnalyzed, setIsAnalyzed] = useState(Boolean(savedDashboardData.isAnalyzed));
 
@@ -964,7 +1203,7 @@ export default function DashboardLayout({ user, onLogout }) {
   const [scans, setScans] = useState(savedDashboardData.scans || []);
   const [interviews, setInterviews] = useState(savedDashboardData.interviews || []);
   const [skillChecklist, setSkillChecklist] = useState(savedDashboardData.skillChecklist || []);
-  const [currentUser, setCurrentUser] = useState(savedDashboardData.currentUser || user);
+  const [currentUser, setCurrentUser] = useState({ ...savedDashboardData.currentUser, ...user });
   const [workspaceStates, setWorkspaceStates] = useState({
     ats_checker: { ...INITIAL_WORKSPACE_STATE },
     job_match: { ...INITIAL_WORKSPACE_STATE },
@@ -1041,6 +1280,7 @@ export default function DashboardLayout({ user, onLogout }) {
           result: data.summary,
           score: data.score,
           details: data.details || [],
+          atsReport: data,
           questions: [],
           isRunning: false
         });
@@ -1064,6 +1304,9 @@ export default function DashboardLayout({ user, onLogout }) {
       const formData = new FormData();
       formData.append('file', state.file);
       formData.append('job_description', state.jobDescription);
+      if (selectedAnalysisMode === 'role') {
+        formData.append('target_role', state.targetRole);
+      }
 
       try {
         const response = await fetch(`${API_URL}/analyze/job-match`, {
@@ -1073,7 +1316,7 @@ export default function DashboardLayout({ user, onLogout }) {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.detail || 'Job match analysis failed.');
+          throw new Error(getApiErrorMessage(data, 'Job match analysis failed.'));
         }
 
         const missingSkills = (data.missingSkills || []).map((item, index) => ({
@@ -1100,9 +1343,13 @@ export default function DashboardLayout({ user, onLogout }) {
           isRunning: false
         });
       } catch (error) {
+        const isConnectionError = error instanceof TypeError;
+        const errorMessage = error?.message || 'Job match analysis failed.';
         updateWorkspaceState(tab, {
           ...state,
-          error: `${error.message} Start the backend API on port 8000 to compare the actual resume and JD.`,
+          error: isConnectionError
+            ? 'Unable to reach the backend API. Start it on port 8000 and try again.'
+            : errorMessage,
           result: '',
           score: null,
           details: [],
@@ -1152,6 +1399,7 @@ export default function DashboardLayout({ user, onLogout }) {
             }
           ],
           questions: data.questions || [],
+          resumeContext: data.resumeContext || data.resume_context || '',
           currentQuestionIndex: 0,
           currentAnswer: '',
           answers: [],
@@ -1215,6 +1463,7 @@ export default function DashboardLayout({ user, onLogout }) {
             }
           ],
           questions: data.questions || HR_QUESTIONS.map(question => ({ topic: 'HR', difficulty: 'Behavioral', question })),
+          resumeContext: data.resumeContext || data.resume_context || '',
           currentQuestionIndex: 0,
           currentAnswer: '',
           answers: [],
@@ -1261,6 +1510,17 @@ export default function DashboardLayout({ user, onLogout }) {
     setScans(prev => prev.filter(scan => scan.id !== scanId));
   };
 
+  const handleFeatureAction = () => {
+    const feature = DASHBOARD_FEATURE_TABS.find(tab => tab.id === selectedFeature);
+
+    if (feature.actionTab) {
+      setSelectedAnalysisMode(feature.analysisMode);
+      setActiveTab(feature.actionTab);
+      return;
+    }
+
+  };
+
   const handleCompleteInterview = (sessionResult) => {
     setInterviews(prev => [sessionResult, ...prev]);
     setScans(prev => [{
@@ -1271,6 +1531,16 @@ export default function DashboardLayout({ user, onLogout }) {
       score: sessionResult.score
     }, ...prev]);
   };
+
+  const activityItems = [
+    ...scans.map(scan => ({ id: `scan-${scan.id}`, label: 'Resume analysis completed', date: scan.date })),
+    ...interviews.map(interview => ({ id: `interview-${interview.id}`, label: `${interview.mode === 'speaking' ? 'Speaking' : 'Written'} interview completed`, date: interview.date }))
+  ].sort((first, second) => second.date.localeCompare(first.date)).slice(0, 4);
+
+  const completedSkills = skillChecklist.filter(skill => skill.completed).length;
+  const preparationProgress = skillChecklist.length
+    ? Math.round((completedSkills / skillChecklist.length) * 100)
+    : isAnalyzed ? 100 : 0;
 
   const renderContent = () => {
     switch (activeTab) {
@@ -1293,7 +1563,12 @@ export default function DashboardLayout({ user, onLogout }) {
       case 'hr_interview':
         return (
           <DedicatedWorkspacePanel
-            config={WORKSPACE_CONFIG[activeTab]}
+            config={{
+              ...WORKSPACE_CONFIG[activeTab],
+              analysisMode: activeTab === 'job_match' ? selectedAnalysisMode : 'ats',
+              jobDescriptionLabel: selectedAnalysisMode === 'role' ? 'Optional Job Description' : WORKSPACE_CONFIG[activeTab].jobDescriptionLabel,
+              requiresJobDescription: selectedAnalysisMode === 'company'
+            }}
             state={workspaceStates[activeTab]}
             onStateChange={(nextState) => updateWorkspaceState(activeTab, nextState)}
             onRun={() => handleWorkspaceRun(activeTab)}
@@ -1302,6 +1577,10 @@ export default function DashboardLayout({ user, onLogout }) {
         );
       case 'settings':
         return <ProfileSettings user={currentUser} onUpdateUser={setCurrentUser} />;
+      case 'admin_users':
+        return currentUser?.role === 'admin'
+          ? <AdminUsers currentUser={currentUser} />
+          : <div className="text-left">Admin access is required.</div>;
       default:
         return <div className="text-left">Section loading...</div>;
     }
@@ -1312,14 +1591,111 @@ export default function DashboardLayout({ user, onLogout }) {
       <Sidebar
         isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen}
         activeTab={activeTab} setActiveTab={setActiveTab}
+        selectedFeature={selectedFeature} setSelectedFeature={setSelectedFeature}
+        setSelectedAnalysisMode={setSelectedAnalysisMode}
         user={currentUser} onLogout={onLogout}
       />
       <div className="db-main-panel">
-        <Header activeTab={activeTab} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
+        <Header activeTab={activeTab} selectedAnalysisMode={selectedAnalysisMode} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
         <main className="db-content">
-          <Greeting user={currentUser} selectedFile={selectedFile} isAnalyzed={isAnalyzed} />
           {activeTab === 'overview' && (
-            <Metrics scans={scans} interviews={interviews} skillChecklist={skillChecklist} />
+            <Greeting
+              user={currentUser}
+              selectedFile={selectedFile}
+              isAnalyzed={isAnalyzed}
+              onAnalyzeResume={() => setActiveTab('ats_checker')}
+              onPracticeInterview={() => setActiveTab('tech_interview')}
+            />
+          )}
+          {activeTab === 'overview' && (
+            <>
+              <Metrics scans={scans} interviews={interviews} skillChecklist={skillChecklist} />
+              <section className="dashboard-insights-grid animate-fade-in">
+                <div className="dashboard-insight-card">
+                  <div className="card-header">
+                    <h3 className="card-title">Recent Activity</h3>
+                  </div>
+                  {activityItems.length > 0 ? (
+                    <ul className="dashboard-activity-list">
+                      {activityItems.map(item => <li key={item.id}><span>{item.label}</span><small>{item.date}</small></li>)}
+                    </ul>
+                  ) : (
+                    <p className="dashboard-empty-state">No activity yet. Analyze your resume to begin.</p>
+                  )}
+                </div>
+                <div className="dashboard-insight-card">
+                  <div className="card-header">
+                    <h3 className="card-title">Preparation Progress</h3>
+                    <strong className="dashboard-progress-value">{preparationProgress}%</strong>
+                  </div>
+                  <div className="dashboard-progress-track" aria-label={`Preparation progress ${preparationProgress}%`}>
+                    <span style={{ width: `${preparationProgress}%` }} />
+                  </div>
+                  <p className="dashboard-empty-state">
+                    {skillChecklist.length > 0
+                      ? `${completedSkills} of ${skillChecklist.length} identified skill gaps completed.`
+                      : isAnalyzed
+                        ? 'No open skill gaps from your latest analysis.'
+                        : 'Complete a Job Match analysis to create your skill checklist.'}
+                  </p>
+                  {skillChecklist.length === 0 && !isAnalyzed && (
+                    <button
+                      type="button"
+                      className="btn-secondary dashboard-progress-action"
+                      onClick={() => {
+                        setSelectedFeature('role');
+                        setSelectedAnalysisMode('role');
+                        setActiveTab('job_match');
+                      }}
+                    >
+                      Start Job Match
+                    </button>
+                  )}
+                </div>
+              </section>
+              <section className="dashboard-feature-card animate-fade-in">
+                <div className="dashboard-feature-header">
+                  <h3>Feature Modes</h3>
+                </div>
+
+                <div className="dashboard-feature-tabs">
+                  {DASHBOARD_FEATURE_TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      className={`dashboard-feature-tab ${selectedFeature === tab.id ? 'active' : ''}`}
+                      onClick={() => setSelectedFeature(tab.id)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="dashboard-feature-panel">
+                  <div className="dashboard-feature-copy">
+                    {(() => {
+                      const feature = DASHBOARD_FEATURE_TABS.find((tab) => tab.id === selectedFeature);
+                      return (
+                        <>
+                          <span className="dashboard-feature-badge">Feature Focus</span>
+                          <h4>{feature.title}</h4>
+                          <p>{feature.description}</p>
+                        </>
+                      );
+                    })()}
+                    <button type="button" className="btn-primary dashboard-feature-action" onClick={handleFeatureAction}>
+                      {DASHBOARD_FEATURE_TABS.find((tab) => tab.id === selectedFeature)?.actionLabel}
+                    </button>
+                  </div>
+
+                  <div className="dashboard-feature-pills">
+                    {DASHBOARD_FEATURE_TABS.find((tab) => tab.id === selectedFeature)?.pills.map((pill) => (
+                      <span key={pill}>{pill}</span>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            </>
           )}
           {renderContent()}
         </main>

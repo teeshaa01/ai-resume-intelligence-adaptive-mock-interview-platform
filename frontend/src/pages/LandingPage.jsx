@@ -2,11 +2,58 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import '../styles/LandingPage.css';
+import heroProductImage from '../assets/resultel-hero-product.svg';
+
+const featureTabs = [
+  {
+    id: 'role',
+    label: 'Role Based',
+    title: 'Role-Based Prep',
+    description: 'Tailor mock interviews, skill checks, and resume guidance to the exact role you are targeting.',
+    pills: ['Targeted prompts', 'Skill mapping', 'Interview flow']
+  },
+  {
+    id: 'company',
+    label: 'Company Based',
+    title: 'Company-Focused Strategy',
+    description: 'Align your resume and interview practice with a company’s culture, priorities, and hiring expectations.',
+    pills: ['Culture fit', 'Hiring signals', 'Priority skills']
+  },
+  {
+    id: 'jd',
+    label: 'JD Based',
+    title: 'JD Matching Engine',
+    description: 'Compare your experience directly against the job description and close the skill and keyword gaps quickly.',
+    pills: ['Skill gap analysis', 'Keyword fit', 'ATS alignment']
+  },
+  {
+    id: 'toolkit',
+    label: 'Resume Toolkit',
+    title: 'Resume Optimization Toolkit',
+    description: 'Improve resume wording, formatting, and ATS readability with clear suggestions tailored to your goals.',
+    pills: ['ATS fixes', 'Rewrite ideas', 'Formatting checks']
+  },
+  {
+    id: 'custom',
+    label: 'Create Your Own',
+    title: 'Build Your Own Workflow',
+    description: 'Design a personalized preparation plan using your own prompts, goals, and focus areas.',
+    pills: ['Custom prompts', 'Personal goals', 'Study plans']
+  },
+  {
+    id: 'assessments',
+    label: 'Assessments',
+    title: 'Progress Assessments',
+    description: 'Track readiness with scorecards, benchmark feedback, and visible growth across each interview cycle.',
+    pills: ['Scorecards', 'Insights', 'Progress tracking']
+  }
+];
 
 export default function LandingPage({ onGetStarted, onLogin }) {
   const [demoState, setDemoState] = useState('idle'); // idle | scanning | completed
   const [demoScore, setDemoScore] = useState(0);
   const [scanStep, setScanStep] = useState('');
+  const [selectedFeature, setSelectedFeature] = useState('role');
 
   const startDemoScan = () => {
     if (demoState === 'scanning') return;
@@ -53,31 +100,113 @@ export default function LandingPage({ onGetStarted, onLogin }) {
       {/* Hero Section */}
       <section className="landing-hero animate-fade-in">
         <div className="landing-hero-content">
-          <div className="landing-tagline">
-            <span className="badge badge-primary">
-              <svg style={{ width: 12, height: 12, marginRight: 4 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-              </svg>
-              Enterprise AI & Semantic Alignment
-            </span>
+          <div className="landing-hero-copy">
+            <div className="landing-tagline">
+              <span className="badge badge-primary">
+                <svg style={{ width: 12, height: 12, marginRight: 4 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+                Enterprise AI & Semantic Alignment
+              </span>
+            </div>
+            <h1 className="landing-hero-title">
+              Land Your Dream Job with <br />
+              <span className="landing-hero-gradient">AI Resume Intelligence</span>
+            </h1>
+            <p className="landing-hero-subtitle">
+              Optimize your resume for applicant tracking systems, identify critical skill gaps, and practice adaptive mock interviews tailored to your target job descriptions.
+            </p>
+            <div className="landing-hero-actions">
+              <button className="btn-primary landing-cta-btn" onClick={onLogin}>
+                Upload Resume
+              </button>
+              <button className="btn-secondary landing-secondary-btn" onClick={() => {
+                const element = document.getElementById('demo-section');
+                if (element) element.scrollIntoView({ behavior: 'smooth' });
+              }}>
+                Watch Live Demo
+              </button>
+            </div>
           </div>
-          <h1 className="landing-hero-title">
-            Land Your Dream Job with <br />
-            <span className="landing-hero-gradient">AI Resume Intelligence</span>
-          </h1>
-          <p className="landing-hero-subtitle">
-            Optimize your resume for applicant tracking systems, identify critical skill gaps, and practice adaptive mock interviews tailored to your target job descriptions.
-          </p>
-          <div className="landing-hero-actions">
-            <button className="btn-primary landing-cta-btn" onClick={onLogin}>
-              Upload Resume
-            </button>
-            <button className="btn-secondary landing-secondary-btn" onClick={() => {
-              const element = document.getElementById('demo-section');
-              if (element) element.scrollIntoView({ behavior: 'smooth' });
-            }}>
-              Watch Live Demo
-            </button>
+
+          <div className="landing-hero-visual">
+            <img className="landing-hero-product-image" src={heroProductImage} alt="Resultel career preparation dashboard" />
+            <div className="hero-visual-panel glass-card">
+              <div className="hero-dashboard-ui">
+                <div className="hero-window-header">
+                  <div className="hero-window-dots">
+                    <span className="dot red" />
+                    <span className="dot yellow" />
+                    <span className="dot green" />
+                  </div>
+                  <span className="hero-window-title">resume-intelligence</span>
+                </div>
+
+                <div className="hero-dashboard-body">
+                  <aside className="hero-sidebar">
+                    <div className="hero-side-item hero-side-item-active">Overview</div>
+                    <div className="hero-side-item">ATS</div>
+                    <div className="hero-side-item">Skills</div>
+                    <div className="hero-side-item">Interviews</div>
+                  </aside>
+
+                  <main className="hero-dashboard-main">
+                    <div className="hero-top-row">
+                      <div className="hero-metric-card primary">
+                        <span>ATS Match</span>
+                        <strong>92%</strong>
+                      </div>
+                      <div className="hero-metric-card">
+                        <span>Skill Gap</span>
+                        <strong>8%</strong>
+                      </div>
+                    </div>
+
+                    <div className="hero-chart-card">
+                      <div className="hero-chart-header">
+                        <span>Interview Readiness</span>
+                        <span className="hero-pill">+18% this week</span>
+                      </div>
+                      <div className="hero-bars">
+                        <span style={{ height: '28%' }} />
+                        <span style={{ height: '38%' }} />
+                        <span style={{ height: '52%' }} />
+                        <span style={{ height: '64%' }} />
+                        <span style={{ height: '78%' }} />
+                        <span style={{ height: '92%' }} />
+                        <span style={{ height: '100%' }} />
+                      </div>
+                    </div>
+
+                    <div className="hero-bottom-row">
+                      <div className="hero-mini-panel">
+                        <span className="hero-mini-label">Top keywords</span>
+                        <div className="hero-tag-group">
+                          <span>Python</span>
+                          <span>SQL</span>
+                          <span>Leadership</span>
+                        </div>
+                      </div>
+                      <div className="hero-mini-panel">
+                        <span className="hero-mini-label">Recommendation</span>
+                        <strong>Boost AWS & CI/CD</strong>
+                      </div>
+                    </div>
+                  </main>
+                </div>
+              </div>
+
+              <div className="hero-floating-badge hero-score-badge">
+                <span className="hero-badge-label">ATS Match</span>
+                <strong>92%</strong>
+              </div>
+              <div className="hero-floating-badge hero-mini-card">
+                <span className="hero-mini-title">Interview Readiness</span>
+                <div className="hero-mini-track">
+                  <span style={{ width: '86%' }} />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -175,64 +304,6 @@ export default function LandingPage({ onGetStarted, onLogin }) {
             <div className="how-step-num">3</div>
             <h3 className="how-step-title">Simulate Interviews</h3>
             <p className="how-step-desc">Practice custom mock sessions dynamically generated around identified gaps to build technical fluency.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="landing-features">
-        <div className="landing-section-header">
-          <h2 className="landing-section-title">Engineered to Make You Stand Out</h2>
-          <p className="landing-section-subtitle">We combine state-of-the-art parsing models with intelligent state tracking to optimize your job application workflow.</p>
-        </div>
-
-        <div className="landing-features-grid">
-          <div className="glass-card landing-feature-card">
-            <div className="landing-feature-icon-container">
-              <svg className="landing-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-              </svg>
-            </div>
-            <h3 className="landing-feature-title">Resume Upload & Parsing</h3>
-            <p className="landing-feature-desc">Drag and drop your PDF or DOCX file. Our engine extracts skills, work history, projects, and credentials in seconds.</p>
-          </div>
-
-          <div className="glass-card landing-feature-card">
-            <div className="landing-feature-icon-container">
-              <svg className="landing-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="20" x2="18" y2="10" />
-                <line x1="12" y1="20" x2="12" y2="4" />
-                <line x1="6" y1="20" x2="6" y2="14" />
-              </svg>
-            </div>
-            <h3 className="landing-feature-title">Semantic Match Score</h3>
-            <p className="landing-feature-desc">Get real-time scoring metrics on skill matching, experience grading, and instantly highlight keyword discrepancies.</p>
-          </div>
-
-          <div className="glass-card landing-feature-card">
-            <div className="landing-feature-icon-container">
-              <svg className="landing-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-            </div>
-            <h3 className="landing-feature-title">ATS Resume Improvement</h3>
-            <p className="landing-feature-desc">Optimize weak descriptors dynamically. Review clear, impact-driven suggestions tailored for enterprise hiring filters.</p>
-          </div>
-
-          <div className="glass-card landing-feature-card">
-            <div className="landing-feature-icon-container">
-              <svg className="landing-feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                <line x1="12" y1="19" x2="12" y2="23" />
-              </svg>
-            </div>
-            <h3 className="landing-feature-title">Adaptive AI Mock Interviews</h3>
-            <p className="landing-feature-desc">Practice interactive role-based questions. Receive constructive analytics on technical relevance and core communication.</p>
           </div>
         </div>
       </section>

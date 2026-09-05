@@ -18,6 +18,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem("resuintel_auth_token");
     setUser({
       name: "",
       email: "",
