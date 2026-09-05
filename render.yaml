@@ -19,8 +19,9 @@ services:
         generateValue: true
 
   # ─── Frontend (React + Vite) ────────────────────────────────────────────────
-  - type: static_site
+  - type: web
     name: ai-resume-frontend
+    runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
